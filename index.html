@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Laser Focus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: single centered column, sticky top bar, warm-black surfaces with an ember-orange accent */
+:root{
+  --bg:#0a0807; --surface:#13100d; --surface-2:#1b1511; --line:#2b2119; --line-2:#47321f;
+  --fg:#f5ede5; --muted:#a8988a; --dim:#6f6259;
+  --accent:#ff8a1f; --accent-2:#ff6a00; --accent-ink:#1a0d02; --accent-soft:rgba(255,138,31,.12);
+  --deep:#ff8a1f; --shallow:#79b8cc;
+  --good:#4fc48c; --warn:#f2b84b; --bad:#ef6352;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Manrope", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+  --r:14px; --r-lg:22px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--fg)}
+body{margin:0;font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(1200px 500px at 85% 110%, rgba(255,106,0,.10), transparent 60%), var(--bg);min-height:100vh}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(10,8,7,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.brand b{font-family:var(--f-display);font-weight:800;font-size:18px;outline:none;border-radius:6px;padding:0 2px}
+.brand b:focus{background:var(--surface-2)}
+.brand small{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+nav{display:flex;gap:4px;margin-left:auto;overflow-x:auto;max-width:100%;scrollbar-width:none}
+nav button{background:none;border:1px solid transparent;border-radius:999px;padding:7px 14px;color:var(--muted);font-weight:600;white-space:nowrap}
+nav button:hover{color:var(--fg)}
+nav button[aria-current="page"]{color:var(--fg);background:#2a170a;border-color:var(--line-2)}
+
+main{max-width:1180px;margin:0 auto;padding:36px 20px 24px}
+.head h1{font-family:var(--f-display);font-weight:800;font-size:clamp(28px,4vw,40px);margin:0 0 6px;letter-spacing:-.01em;text-wrap:balance}
+.head p{margin:0;color:var(--muted);max-width:62ch;font-size:16px}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+
+.panel{background:linear-gradient(180deg,var(--surface-2),var(--surface));border:1px solid var(--line-2);border-radius:var(--r-lg);padding:22px}
+.panel+.panel,.stack>*+*{margin-top:18px}
+.panel h2{font-family:var(--f-display);font-size:19px;margin:0;font-weight:600}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.grow{flex:1 1 220px;min-width:0}
+.muted{color:var(--muted)} .dim{color:var(--dim)} .small{font-size:13px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+.btn{border:1px solid var(--line-2);background:#1e130b;color:#ffd2a8;border-radius:10px;padding:8px 14px;font-weight:700;font-size:14px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:var(--accent-ink);border-color:transparent}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.icon{width:38px;height:38px;padding:0;display:grid;place-items:center}
+.btn.ghost{background:none;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--fg);border-color:var(--line)}
+.btn.danger{color:var(--bad)}
+
+.inp,select.inp,textarea.inp{background:#0f0c0a;border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.inp:focus{border-color:var(--accent);outline:none}
+textarea.inp{width:100%;resize:vertical;min-height:64px;line-height:1.45}
+.inp::placeholder{color:var(--dim)}
+.inp.time{width:96px;text-align:center;font-family:var(--f-mono);font-size:13px}
+
+.bar{height:6px;background:#241b14;border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent-2),var(--accent));border-radius:99px;transition:width .3s}
+.bar.good i{background:var(--good)}
+
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.deep{color:var(--deep);border-color:rgba(255,138,31,.35);background:rgba(255,138,31,.08)}
+.chip.shallow{color:var(--shallow);border-color:rgba(121,184,204,.35);background:rgba(121,184,204,.08)}
+.chip.ok{color:var(--good);border-color:rgba(79,196,140,.35)}
+.chip.warn{color:var(--warn);border-color:rgba(242,184,75,.35)}
+.chip.link{color:#e7d4c2}
+
+.star{background:none;border:none;font-size:18px;line-height:1;color:var(--dim);padding:2px}
+.star.on{color:var(--warn)}
+.check{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--line-2);background:#0f0c0a;display:grid;place-items:center;flex:none;padding:0}
+.check.on{background:var(--good);border-color:var(--good)}
+.check.on::after{content:"";width:9px;height:5px;border-left:2px solid #062014;border-bottom:2px solid #062014;transform:translateY(-1px) rotate(-45deg)}
+
+/* Session */
+.datebar h2{font-size:21px}
+.pullbox{display:flex;gap:8px;flex-wrap:wrap}
+.pull{background:#160f0a;border:1px dashed var(--line-2);border-radius:99px;padding:5px 12px;font-size:13px;color:#ffd2a8}
+.pull:hover{border-style:solid;border-color:var(--accent)}
+.scard{border:1px solid var(--line);border-radius:var(--r);background:#100c09;overflow:hidden}
+.scard.done{opacity:.72}
+.scard.done .stitle{text-decoration:line-through;text-decoration-color:var(--dim)}
+.shead{display:flex;gap:10px;align-items:center;padding:14px 16px;flex-wrap:wrap}
+.stitle{font-weight:700;font-size:16px;flex:1 1 200px;min-width:0;background:none;border:1px solid transparent;border-radius:8px;padding:4px 6px}
+.stitle:hover{border-color:var(--line)} .stitle:focus{border-color:var(--accent);outline:none;background:#0f0c0a}
+.times{display:flex;gap:8px;align-items:center}
+.times label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);display:flex;flex-direction:column;gap:2px;align-items:center}
+details.plan{border-top:1px solid var(--line)}
+details.plan>summary{list-style:none;cursor:pointer;padding:10px 16px;display:flex;gap:10px;align-items:center;color:var(--muted);font-size:13px;font-weight:600}
+details.plan>summary::-webkit-details-marker{display:none}
+details.plan>summary::before{content:"▸";transition:transform .2s;color:var(--accent)}
+details.plan[open]>summary::before{transform:rotate(90deg)}
+.qs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px;padding:4px 16px 18px}
+.q{display:flex;flex-direction:column;gap:6px;min-width:0}
+.q span{font-size:13px;font-weight:700;color:#ead9c8;display:flex;gap:8px}
+.q span em{font-style:normal;font-family:var(--f-mono);color:var(--accent);font-size:12px;padding-top:1px}
+.q small{color:var(--dim);font-size:12px}
+.q.missing textarea,.q.missing .inp{border-color:rgba(239,99,82,.45)}
+.q.wide{grid-column:1/-1}
+
+/* Task sheet */
+.addgrid{display:grid;grid-template-columns:minmax(0,1fr) 150px 220px 110px 100px auto auto;gap:10px;align-items:center}
+@media (max-width:980px){.addgrid{grid-template-columns:1fr 1fr}.addgrid .full{grid-column:1/-1}}
+.sec-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:6px 0 10px}
+.sec-h h3{margin:0;font-family:var(--f-display);font-size:18px;font-weight:600}
+.sec-h .mono{color:var(--muted);font-size:12px}
+.trow{display:grid;grid-template-columns:24px 26px minmax(0,1fr) 112px 100px 100px 34px;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#100c09}
+.trow+.trow{margin-top:8px}
+.trow.done .ttitle{text-decoration:line-through;color:var(--muted)}
+.ttitle{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.tmeta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.colhead{display:grid;grid-template-columns:24px 26px minmax(0,1fr) 112px 100px 100px 34px;gap:10px;padding:0 12px 6px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+@media (max-width:720px){
+  .trow{grid-template-columns:24px 26px minmax(0,1fr) 34px}
+  .trow .c-day,.trow .c-etf,.trow .c-atf{grid-column:3/4}
+  .trow .c-del{grid-row:1;grid-column:4}
+  .colhead{display:none}
+}
+.empty{border:1px dashed var(--line-2);border-radius:var(--r);padding:22px;text-align:center;color:var(--muted)}
+
+/* Tracker */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+@media (max-width:860px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r);padding:16px 18px}
+.tile .big{font-family:var(--f-display);font-weight:800;font-size:30px;line-height:1.1}
+.tile .lbl{color:var(--muted);font-size:13px;margin-top:4px}
+.tile .sub{font-size:12px;color:var(--dim);margin-top:2px}
+.split{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.split{grid-template-columns:1fr}}
+.chart svg{width:100%;height:auto;display:block}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal .dow{font-size:11px;text-align:center;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+.cell{aspect-ratio:1/1.05;max-width:100%;border:1px solid var(--line);border-radius:10px;background:#100c09;padding:6px;display:flex;flex-direction:column;justify-content:space-between;text-align:left;font-weight:700;font-size:13px;min-width:0}
+.cell:hover{border-color:var(--line-2)}
+.cell.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.cell.today .n{color:var(--accent)}
+.cell .pc{font-family:var(--f-mono);font-size:10px;font-weight:500;color:var(--muted)}
+.cell.l1{background:#1d130c}.cell.l2{background:#2c1a0c}.cell.l3{background:#3d220b}.cell.l4{background:#123322;border-color:#1f5a3c}
+.cell.blank{visibility:hidden}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kv div{background:#100c09;border:1px solid var(--line);border-radius:12px;padding:12px}
+.kv b{display:block;font-family:var(--f-mono);font-size:17px}
+.kv span{font-size:12px;color:var(--muted)}
+.mrow+.mrow{margin-top:14px}
+.dlist{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.dlist li{display:flex;gap:8px;align-items:center;font-size:14px;min-width:0}
+.dot{width:8px;height:8px;border-radius:99px;background:var(--dim);flex:none}
+.dot.on{background:var(--good)}
+
+/* Goals */
+.gcard .gtitle{font-family:var(--f-display);font-weight:600;font-size:21px;background:none;border:1px solid transparent;border-radius:8px;padding:2px 6px;flex:1 1 240px;min-width:0}
+.gcard .gtitle:focus{border-color:var(--accent);outline:none;background:#0f0c0a}
+.ms{display:grid;grid-template-columns:minmax(0,1fr) 120px 34px;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.ms input{background:none;border:1px solid transparent;border-radius:8px;padding:4px 6px;font-weight:600;min-width:0}
+.ms input:focus{border-color:var(--accent);outline:none}
+
+/* Footer, modal, toast */
+footer{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:30px 20px 50px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:grid;place-items:center;z-index:50;padding:16px}
+.modal .panel{width:min(520px,100%)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg label{border:1px solid var(--line-2);border-radius:99px;padding:6px 14px;cursor:pointer;font-weight:600;font-size:14px;color:var(--muted)}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg input:checked+span{color:var(--accent-ink)}
+.seg label:has(input:checked){background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#24170d;border:1px solid var(--line-2);padding:10px 18px;border-radius:99px;z-index:60;font-weight:600}
+
+/* ---------- Report (rendered offscreen, then captured) ---------- */
+#stage{position:fixed;left:-12000px;top:0;width:900px}
+.rp{--rbg:#0c0907;--rcard:#16110d;--rline:#33251a;--rfg:#f6eee6;--rmuted:#a8988a;--racc:#ff8a1f;--rbar:#2a1e15;
+  background:var(--rbg);color:var(--rfg);font-family:var(--f-body);padding:44px 48px 36px;width:900px}
+.rp.light{--rbg:#ffffff;--rcard:#faf6f2;--rline:#ece2d8;--rfg:#1d140d;--rmuted:#76685c;--racc:#e86a00;--rbar:#efe5dc}
+.rp-top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--racc);padding-bottom:18px}
+.rp-eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--racc);font-weight:700}
+.rp-name{font-family:var(--f-display);font-weight:800;font-size:34px;line-height:1.1;margin-top:6px}
+.rp-meta{text-align:right;font-size:13px;color:var(--rmuted);line-height:1.6}
+.rp-meta b{color:var(--rfg)}
+.rp-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:24px}
+.rp-k{background:var(--rcard);border:1px solid var(--rline);border-radius:12px;padding:14px 16px}
+.rp-k .v{font-family:var(--f-display);font-weight:800;font-size:28px;line-height:1.1}
+.rp-k .l{font-size:12px;color:var(--rmuted);margin-top:4px}
+.rp-k .s{font-size:11px;color:var(--rmuted);margin-top:2px}
+.rp-sec{margin-top:26px}
+.rp-sec h3{font-family:var(--f-display);font-size:17px;margin:0 0 12px;font-weight:600;display:flex;justify-content:space-between;align-items:baseline}
+.rp-sec h3 small{font-family:var(--f-body);font-size:12px;color:var(--rmuted);font-weight:500}
+.rp-box{background:var(--rcard);border:1px solid var(--rline);border-radius:12px;padding:16px 18px}
+.rp-bars{display:flex;align-items:flex-end;gap:4px;height:150px;border-bottom:1px solid var(--rline);position:relative}
+.rp-bars .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;position:relative}
+.rp-bars .b i{display:block;width:100%;max-width:26px;border-radius:4px 4px 0 0;background:var(--racc)}
+.rp-bars .b i.full{background:#3fb37f}
+.rp-bars .b i.none{height:2px;background:var(--rline)}
+.rp-xl{display:flex;gap:4px;margin-top:6px}
+.rp-xl span{flex:1;text-align:center;font-size:9.5px;color:var(--rmuted);white-space:nowrap;overflow:hidden}
+.rp-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rp-line{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;gap:12px}
+.rp-line span:last-child{color:var(--rmuted);font-family:var(--f-mono);font-size:12px;white-space:nowrap}
+.rp-track{height:8px;background:var(--rbar);border-radius:99px;overflow:hidden;margin-bottom:14px}
+.rp-track i{display:block;height:100%;background:var(--racc);border-radius:99px}
+.rp-stack{display:flex;height:14px;border-radius:99px;overflow:hidden;background:var(--rbar);margin:6px 0 12px}
+.rp-stack i{display:block;height:100%}
+.rp-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.rp-tbl th{text-align:left;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--rmuted);font-weight:700;padding:0 8px 8px;border-bottom:1px solid var(--rline)}
+.rp-tbl td{padding:8px;border-bottom:1px solid var(--rline);vertical-align:top}
+.rp-tbl td.n{font-family:var(--f-mono);white-space:nowrap;text-align:right}
+.rp-tbl th.n{text-align:right}
+.rp-foot{margin-top:28px;display:flex;justify-content:space-between;font-size:11px;color:var(--rmuted);border-top:1px solid var(--rline);padding-top:12px}
+.rp-legend{display:flex;gap:16px;font-size:12px;color:var(--rmuted)}
+.rp-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <b id="ownerName" contenteditable="true" spellcheck="false" title="Click to edit your name">Your Name</b>
+      <small>Laser Focus Ritual</small>
+    </div>
+    <nav id="nav" aria-label="Sections">
+      <button data-nav="session">Session Sheet</button>
+      <button data-nav="tracker">Daily Success Tracker</button>
+      <button data-nav="tasks">Task Sheet</button>
+      <button data-nav="goals">Goal &amp; milestones</button>
+    </nav>
+    <button class="btn primary" data-act="open-export">Export report</button>
+  </div>
+</header>
+
+<main id="view"></main>
+
+<footer>
+  <button class="btn" data-act="export-backup">Export backup</button>
+  <button class="btn" data-act="import-backup">Import backup</button>
+  <input type="file" id="importFile" accept="application/json,.json" hidden>
+</footer>
+
+<div class="modal" id="exportModal" hidden>
+  <div class="panel" role="dialog" aria-labelledby="exTitle">
+    <div class="row between"><h2 id="exTitle">Export progress report</h2><button class="btn ghost icon" data-act="close-export" aria-label="Close">✕</button></div>
+    <p class="muted small" style="margin:6px 0 18px">A one-page summary of your completion, deep vs shallow work, ETF vs ATF accuracy, streaks and goals.</p>
+    <div class="stack">
+      <div><div class="small muted" style="margin-bottom:6px">Period</div>
+        <div class="seg">
+          <label><input type="radio" name="exRange" value="week"><span>This week</span></label>
+          <label><input type="radio" name="exRange" value="month"><span>This month</span></label>
+          <label><input type="radio" name="exRange" value="30"><span>Last 30 days</span></label>
+          <label><input type="radio" name="exRange" value="all" checked><span>All time</span></label>
+        </div></div>
+      <div><div class="small muted" style="margin-bottom:6px">Format</div>
+        <div class="seg">
+          <label><input type="radio" name="exFmt" value="png" checked><span>PNG image</span></label>
+          <label><input type="radio" name="exFmt" value="pdf"><span>PDF (A4)</span></label>
+        </div></div>
+      <div><div class="small muted" style="margin-bottom:6px">Style</div>
+        <div class="seg">
+          <label><input type="radio" name="exStyle" value="dark" checked><span>Dark</span></label>
+          <label><input type="radio" name="exStyle" value="light"><span>Light (print friendly)</span></label>
+        </div></div>
+      <div class="row" style="justify-content:flex-end;margin-top:22px">
+        <button class="btn ghost" data-act="close-export">Cancel</button>
+        <button class="btn primary" data-act="gen-report" id="genBtn">Download report</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="stage" aria-hidden="true"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function(){
+'use strict';
+/* ---------------- Storage ---------------- */
+const KEY='laserfocus.v1';
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+function freshState(){
+  return {name:'Tathastu Srivastava', tasks:[], goals:[
+    {id:uid(),title:'Complete Fitness Industry Course and become certified Trainer',milestones:[]},
+    {id:uid(),title:'Learn Sanskrit',milestones:[]},
+    {id:uid(),title:'Trading - Challenges passing etc.',milestones:[]}
+  ]};
+}
+function load(){
+  try{const raw=localStorage.getItem(KEY); if(raw){const s=JSON.parse(raw); if(s&&Array.isArray(s.tasks)&&Array.isArray(s.goals)) return s;}}catch(e){}
+  return freshState();
+}
+let S=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* ---------------- Dates ---------------- */
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const pdate=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const addDays=(s,n)=>{const d=pdate(s);d.setDate(d.getDate()+n);return ymd(d)};
+const dayIdx=s=>(pdate(s).getDay()+6)%7;
+const mondayOf=s=>addDays(s,-dayIdx(s));
+const today=()=>ymd(new Date());
+const DOW=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const fmt=(s,o)=>pdate(s).toLocaleDateString('en-US',o);
+const longDate=s=>fmt(s,{weekday:'long',month:'short',day:'numeric'});
+const shortDate=s=>fmt(s,{month:'short',day:'numeric'});
+
+/* ---------------- Durations ---------------- */
+function parseDur(v){
+  if(v==null) return null; v=String(v).trim().toLowerCase(); if(!v) return null;
+  let m;
+  if((m=v.match(/^(\d+):(\d{1,2})$/))) return +m[1]*60+ +m[2];
+  if((m=v.match(/^(\d+(?:\.\d+)?)\s*h(?:rs?|ours?)?\s*(?:(\d+)\s*m(?:in)?s?)?$/))) return Math.round(parseFloat(m[1])*60+(m[2]?+m[2]:0));
+  if((m=v.match(/^(\d+)\s*m(?:in)?s?$/))) return +m[1];
+  if((m=v.match(/^(\d+(?:\.\d+)?)$/))) return Math.round(parseFloat(m[1]));
+  return null;
+}
+function fmtDur(m){
+  if(m==null||isNaN(m)) return '—';
+  m=Math.round(m); const h=Math.floor(m/60), r=m%60;
+  return h?(r?`${h}h ${r}m`:`${h}h`):`${r}m`;
+}
+const hrs=m=>(m/60).toFixed(m>=600?0:1)+'h';
+
+/* ---------------- Model helpers ---------------- */
+const QUESTIONS=[
+  {k:'q1',t:'What is the task? Explain it.',h:'If it cannot be written clearly, it cannot be done clearly.'},
+  {k:'q2',t:'What is the challenge today?'},
+  {k:'q3',t:'How will you perform it?'},
+  {k:'q4',t:'How much time will it take to finish?',h:'This becomes the ETF. Try 90, 1h30m or 1.5h.',time:true},
+  {k:'q5',t:'What exact outcome do you want at the end of the session?'},
+  {k:'q6',t:'How will you make it a trackable progress sheet?'},
+  {k:'q7',t:'Write everything that could go wrong.'},
+  {k:'q8',t:"Don't-do list: what will guarantee failure?"}
+];
+function newTask(o){return Object.assign({id:uid(),title:'',type:'deep',priority:false,etf:null,atf:null,link:'',week:mondayOf(today()),day:-1,done:false,doneAt:null,plan:{},created:Date.now()},o)}
+const byId=id=>S.tasks.find(t=>t.id===id);
+const taskDate=t=>t.day>=0?addDays(t.week,t.day):null;
+const effDate=t=>taskDate(t)||(t.done&&t.doneAt)||t.week;
+const tasksOn=d=>S.tasks.filter(t=>t.day>=0&&t.week===mondayOf(d)&&t.day===dayIdx(d));
+const tasksOfWeek=w=>S.tasks.filter(t=>t.week===w);
+function planCount(t){let n=0;for(const q of QUESTIONS){if(q.time){if(t.etf!=null)n++}else if((t.plan[q.k]||'').trim())n++}return n}
+function stats(list){const total=list.length,done=list.filter(t=>t.done).length;return{total,done,pct:total?Math.round(done/total*100):null}}
+function findGoalOfMs(mid){return S.goals.find(g=>g.milestones.some(m=>m.id===mid))}
+function linkName(link){
+  if(!link) return '';
+  const [k,id]=link.split(':');
+  if(k==='g'){const g=S.goals.find(x=>x.id===id);return g?g.title:''}
+  const g=findGoalOfMs(id); if(!g) return ''; const m=g.milestones.find(x=>x.id===id); return m.title;
+}
+function tasksForGoal(g){const ids=new Set(g.milestones.map(m=>'m:'+m.id));ids.add('g:'+g.id);return S.tasks.filter(t=>ids.has(t.link))}
+function linkOptions(sel){
+  let h=`<option value="">Decide later</option>`;
+  for(const g of S.goals){
+    h+=`<optgroup label="${esc(trunc(g.title,40))}"><option value="g:${g.id}" ${sel==='g:'+g.id?'selected':''}>${esc(trunc(g.title,34))} (whole goal)</option>`;
+    for(const m of g.milestones) h+=`<option value="m:${m.id}" ${sel==='m:'+m.id?'selected':''}>↳ ${esc(trunc(m.title,34))}</option>`;
+    h+='</optgroup>';
+  }
+  return h;
+}
+function streaks(){
+  const days=new Map();
+  for(const t of S.tasks){const d=taskDate(t);if(!d)continue;const s=days.get(d)||{t:0,d:0};s.t++;if(t.done)s.d++;days.set(d,s)}
+  const perfect=d=>{const s=days.get(d);return s&&s.t>0&&s.d===s.t};
+  let cur=0,d=today(); if(!perfect(d)) d=addDays(d,-1);
+  while(perfect(d)){cur++;d=addDays(d,-1)}
+  let best=0,run=0; const keys=[...days.keys()].sort();
+  if(keys.length){for(let x=keys[0];x<=today();x=addDays(x,1)){if(perfect(x)){run++;best=Math.max(best,run)}else run=0}}
+  const planned=keys.filter(k=>k<=today()).length, perfectDays=keys.filter(k=>k<=today()&&perfect(k)).length;
+  return{cur,best,planned,perfectDays};
+}
+function timeStats(list){
+  const f=list.filter(t=>t.done&&t.etf!=null&&t.atf!=null);
+  const etf=f.reduce((a,t)=>a+t.etf,0), atf=f.reduce((a,t)=>a+t.atf,0);
+  const onTime=f.filter(t=>t.atf<=t.etf).length;
+  return{n:f.length,etf,atf,onTime,onTimePct:f.length?Math.round(onTime/f.length*100):null,drift:etf?Math.round((atf-etf)/etf*100):null};
+}
+const sumAtf=(list,type)=>list.filter(t=>t.done&&t.type===type).reduce((a,t)=>a+(t.atf??0),0);
+
+/* ---------------- Utils ---------------- */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const trunc=(s,n)=>s.length>n?s.slice(0,n-1)+'…':s;
+const $=s=>document.querySelector(s);
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2400)}
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
+const pctTxt=p=>p==null?'—':p+'%';
+
+/* ---------------- UI state ---------------- */
+const ui={
+  view:(location.hash||'').slice(1)||(()=>{try{return localStorage.getItem(KEY+'.view')}catch(e){return null}})()||'session',
+  sess:new Date().getHours()>=17?addDays(today(),1):today(),
+  week:mondayOf(today()),
+  calMonth:today().slice(0,7)+'-01',
+  calSel:today(),
+  open:new Set(),
+  armed:null
+};
+if(!['session','tracker','tasks','goals'].includes(ui.view)) ui.view='session';
+
+/* ---------------- Views ---------------- */
+function render(){
+  document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.nav===ui.view?'page':'false'));
+  const v=$('#view');
+  v.innerHTML={session:vSession,tracker:vTracker,tasks:vTasks,goals:vGoals}[ui.view]();
+  const nm=$('#ownerName'); if(document.activeElement!==nm) nm.textContent=S.name||'Your Name';
+}
+
+function dayLabel(d){const t=today();return d===t?'Today':d===addDays(t,1)?'Tomorrow':d===addDays(t,-1)?'Yesterday':fmt(d,{weekday:'short'})}
+
+function vSession(){
+  const d=ui.sess, items=tasksOn(d).sort((a,b)=>(b.priority-a.priority)||(a.created-b.created));
+  const st=stats(items);
+  const pool=tasksOfWeek(mondayOf(d)).filter(t=>t.day<0&&!t.done);
+  return `
+  <div class="head"><div><h1>Session Sheet</h1>
+    <p>Fill this every night for tomorrow. Answer all eight questions for each session. Items you add here also appear on that day in the Task Sheet, and ticking one off updates both.</p></div></div>
+  <section class="panel">
+    <div class="row between datebar">
+      <div class="row"><button class="btn icon" data-act="sess-step" data-n="-1" aria-label="Previous day">‹</button>
+        <h2>${dayLabel(d)} · ${esc(longDate(d))}</h2></div>
+      <div class="row"><button class="btn" data-act="sess-go" data-n="0">Today</button><button class="btn" data-act="sess-go" data-n="1">Tomorrow</button>
+        <button class="btn icon" data-act="sess-step" data-n="1" aria-label="Next day">›</button></div>
+    </div>
+    <form class="addgrid" data-form="add-session" style="margin-top:18px;grid-template-columns:minmax(0,1fr) 150px 240px auto">
+      <input class="inp full" id="sTitle" name="title" placeholder="What is the task? Add a session item" autocomplete="off" required>
+      <select class="inp" id="sType" name="type"><option value="deep">Deep work</option><option value="shallow">Shallow work</option></select>
+      <select class="inp" id="sLink" name="link">${linkOptions('')}</select>
+      <button class="btn primary">Add</button>
+    </form>
+    <div style="margin-top:16px">
+      <div class="small muted" style="margin-bottom:8px">Pull from this week's Task Sheet</div>
+      ${pool.length?`<div class="pullbox">${pool.map(t=>`<button class="pull" data-act="schedule" data-id="${t.id}">${t.priority?'★ ':''}+ ${esc(trunc(t.title,48))}</button>`).join('')}</div>`
+        :`<div class="small dim">Nothing left to pull from that week's Task Sheet.</div>`}
+    </div>
+    <div style="margin-top:18px">
+      <div class="row between small"><span class="muted">Session completion</span><span class="mono muted">${st.total?`${st.done} of ${st.total} done · ${st.pct}%`:'nothing planned yet'}</span></div>
+      <div class="bar ${st.pct===100?'good':''}" style="margin-top:8px"><i style="width:${st.pct||0}%"></i></div>
+    </div>
+  </section>
+  <section class="stack" style="margin-top:18px">
+    ${items.length?items.map(sessionCard).join(''):`<div class="empty">No sessions planned for ${esc(longDate(d))}. Add one above, or pull a task from the week.</div>`}
+  </section>`;
+}
+
+function planPill(t){const n=planCount(t);return n===8?`<span class="chip ok" data-pill="${t.id}">Plan complete</span>`:`<span class="chip warn" data-pill="${t.id}">${8-n} question${8-n>1?'s':''} left</span>`}
+
+function sessionCard(t){
+  const n=planCount(t), open=ui.open.has(t.id)||(n<8&&!ui.open.has('x'+t.id));
+  return `
+  <article class="scard ${t.done?'done':''}">
+    <div class="shead">
+      <button class="check ${t.done?'on':''}" data-act="toggle-done" data-id="${t.id}" aria-label="Mark done"></button>
+      <button class="star ${t.priority?'on':''}" data-act="toggle-star" data-id="${t.id}" aria-label="Priority">★</button>
+      <input class="stitle" value="${esc(t.title)}" data-tf="title" data-id="${t.id}" aria-label="Task title">
+      <span class="chip ${t.type}">${t.type==='deep'?'Deep':'Shallow'}</span>
+      ${t.link?`<span class="chip link">${esc(trunc(linkName(t.link),30))}</span>`:''}
+      ${planPill(t)}
+      <div class="times">
+        <label>ETF<input class="inp time" value="${t.etf!=null?fmtDur(t.etf):''}" placeholder="—" data-tf="etf" data-id="${t.id}"></label>
+        <label>ATF<input class="inp time" value="${t.atf!=null?fmtDur(t.atf):''}" placeholder="—" data-tf="atf" data-id="${t.id}"></label>
+      </div>
+      <button class="btn ghost small" data-act="unschedule" data-id="${t.id}" title="Move back to the week's Task Sheet">Unplan</button>
+      <button class="btn ghost icon danger" data-act="del-task" data-id="${t.id}" aria-label="Delete">${ui.armed===t.id?'?':'✕'}</button>
+    </div>
+    <details class="plan" data-id="${t.id}" ${open?'open':''}>
+      <summary>Session plan · <span class="mono" data-count="${t.id}">${n}/8</span> answered</summary>
+      <div class="qs">
+        ${QUESTIONS.map((q,i)=>{
+          const val=q.time?(t.etf!=null?fmtDur(t.etf):''):(t.plan[q.k]||'');
+          const miss=!String(val).trim();
+          return `<label class="q ${miss?'missing':''} ${i===0?'wide':''}" data-q="${t.id}:${q.k}">
+            <span><em>${pad(i+1)}</em>${esc(q.t)}</span>
+            ${q.time?`<input class="inp" value="${esc(val)}" placeholder="e.g. 1h30m" data-tf="etf" data-id="${t.id}">`
+              :`<textarea class="inp" rows="${i===0?3:2}" data-plan="${q.k}" data-id="${t.id}">${esc(val)}</textarea>`}
+            ${q.h?`<small>${esc(q.h)}</small>`:''}
+          </label>`}).join('')}
+      </div>
+    </details>
+  </article>`;
+}
+
+function vTasks(){
+  const w=ui.week, list=tasksOfWeek(w), st=stats(list), isThis=w===mondayOf(today());
+  const sec=type=>{
+    const L=list.filter(t=>t.type===type).sort((a,b)=>(a.done-b.done)||(b.priority-a.priority)||((a.day<0?9:a.day)-(b.day<0?9:b.day))||(a.created-b.created));
+    const s=stats(L), etf=L.reduce((a,t)=>a+(t.etf||0),0), atf=L.reduce((a,t)=>a+(t.atf||0),0);
+    return `<div style="margin-top:22px">
+      <div class="sec-h"><h3>${type==='deep'?'Deep work':'Shallow work'}</h3><span class="chip ${type}">${s.done}/${s.total}</span>
+        <span class="mono">ETF ${fmtDur(etf)} · ATF ${fmtDur(atf)}</span></div>
+      ${L.length?`<div class="colhead"><span></span><span></span><span>Task</span><span>Day</span><span>ETF</span><span>ATF</span><span></span></div>${L.map(taskRow).join('')}`
+        :`<div class="empty small">${type==='deep'?'No deep work planned. Deep work is your focused, high-value work.':'No shallow work planned. Shallow work is lighter admin and errands.'}</div>`}
+    </div>`;
+  };
+  return `
+  <div class="head"><div><h1>Task Sheet</h1>
+    <p>Build this every Sunday. Pick the week's tasks, split them into deep and shallow work, star the priorities, and set an ETF. Write the ATF once you finish.</p></div></div>
+  <section class="panel">
+    <div class="row between">
+      <div class="row"><button class="btn icon" data-act="week-step" data-n="-1" aria-label="Previous week">‹</button>
+        <h2>${isThis?'This week':w===addDays(mondayOf(today()),7)?'Next week':'Week'} · ${esc(shortDate(w))} – ${esc(shortDate(addDays(w,6)))}</h2></div>
+      <div class="row"><button class="btn" data-act="week-go" data-n="0">This week</button><button class="btn" data-act="week-go" data-n="1">Next week</button>
+        <button class="btn icon" data-act="week-step" data-n="1" aria-label="Next week">›</button></div>
+    </div>
+    <form class="addgrid" data-form="add-task" style="margin-top:18px">
+      <input class="inp full" id="tTitle" name="title" placeholder="Add a task for this week" autocomplete="off" required>
+      <select class="inp" id="tType" name="type"><option value="deep">Deep work</option><option value="shallow">Shallow work</option></select>
+      <select class="inp" id="tLink" name="link">${linkOptions('')}</select>
+      <select class="inp" id="tDay" name="day"><option value="-1">Any day</option>${DOW.map((x,i)=>`<option value="${i}">${x}</option>`).join('')}</select>
+      <input class="inp" id="tEtf" name="etf" placeholder="ETF" autocomplete="off" title="Estimated time, e.g. 90, 1h30m, 1.5h">
+      <label class="row small muted" style="gap:6px;white-space:nowrap"><input type="checkbox" id="tPri" name="priority"> ★ Priority</label>
+      <button class="btn primary">Add task</button>
+    </form>
+    <div style="margin-top:16px">
+      <div class="row between small"><span class="muted">Week completion</span><span class="mono muted">${st.total?`${st.done} of ${st.total} done · ${st.pct}%`:'no tasks yet'}</span></div>
+      <div class="bar ${st.pct===100?'good':''}" style="margin-top:8px"><i style="width:${st.pct||0}%"></i></div>
+    </div>
+    ${sec('deep')}${sec('shallow')}
+  </section>`;
+}
+
+function taskRow(t){
+  const n=planCount(t);
+  return `<div class="trow ${t.done?'done':''}">
+    <button class="check ${t.done?'on':''}" data-act="toggle-done" data-id="${t.id}" aria-label="Mark done"></button>
+    <button class="star ${t.priority?'on':''}" data-act="toggle-star" data-id="${t.id}" aria-label="Priority">★</button>
+    <div style="min-width:0"><div class="ttitle">${esc(t.title)}</div>
+      <div class="tmeta">${t.link?`<span class="chip link">${esc(trunc(linkName(t.link),36))}</span>`:''}
+      ${t.day>=0?`<span class="chip">${n===8?'Plan 8/8':`Plan ${n}/8`}</span>`:''}</div></div>
+    <select class="inp c-day" style="padding:6px 8px" data-tf="day" data-id="${t.id}" aria-label="Day"><option value="-1">Any day</option>${DOW.map((x,i)=>`<option value="${i}" ${t.day===i?'selected':''}>${x}</option>`).join('')}</select>
+    <input class="inp time c-etf" value="${t.etf!=null?fmtDur(t.etf):''}" placeholder="ETF" data-tf="etf" data-id="${t.id}" aria-label="ETF">
+    <input class="inp time c-atf" value="${t.atf!=null?fmtDur(t.atf):''}" placeholder="ATF" data-tf="atf" data-id="${t.id}" aria-label="ATF">
+    <button class="btn ghost icon danger c-del" data-act="del-task" data-id="${t.id}" aria-label="Delete">${ui.armed===t.id?'?':'✕'}</button>
+  </div>`;
+}
+
+function chart7(){
+  const days=[...Array(7)].map((_,i)=>addDays(today(),i-6));
+  const W=1000,H=250,L=44,R=20,T=28,B=34, iw=W-L-R, ih=H-T-B;
+  const pts=days.map((d,i)=>{const s=stats(tasksOn(d));return{d,i,p:s.pct,x:L+iw*i/6,y:s.pct==null?null:T+ih*(1-s.pct/100)}});
+  let segs=[],cur=[];pts.forEach(p=>{if(p.y==null){if(cur.length)segs.push(cur);cur=[]}else cur.push(p)});if(cur.length)segs.push(cur);
+  const grid=[0,50,100].map(v=>{const y=T+ih*(1-v/100);return `<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#2b2119" stroke-dasharray="${v?'3 4':''}"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#a8988a" font-size="11">${v}%</text>`}).join('');
+  const lines=segs.map(s=>{
+    const line=s.map((p,j)=>`${j?'L':'M'}${p.x},${p.y}`).join(' ');
+    const area=s.length>1?`<path d="${line} L${s[s.length-1].x},${T+ih} L${s[0].x},${T+ih} Z" fill="url(#gfill)"/>`:'';
+    return area+`<path d="${line}" fill="none" stroke="#ff8a1f" stroke-width="2.5" stroke-linejoin="round"/>`}).join('');
+  const dots=pts.filter(p=>p.y!=null).map(p=>`<circle cx="${p.x}" cy="${p.y}" r="${p.i===6?5:3.5}" fill="${p.p===100?'#4fc48c':'#ff8a1f'}" stroke="#13100d" stroke-width="2"/><text x="${p.x}" y="${p.y-10}" text-anchor="middle" fill="#f5ede5" font-size="11" font-family="JetBrains Mono, monospace">${p.p}%</text>`).join('');
+  const xl=pts.map(p=>`<text x="${p.x}" y="${H-10}" text-anchor="middle" fill="${p.i===6?'#ff8a1f':'#a8988a'}" font-size="11">${fmt(p.d,{weekday:'short'})} ${pdate(p.d).getDate()}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Session completion over the last 7 days"><defs><linearGradient id="gfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a1f" stop-opacity=".28"/><stop offset="1" stop-color="#ff8a1f" stop-opacity="0"/></linearGradient></defs>${grid}${lines}${dots}${xl}</svg>`;
+}
+
+function vTracker(){
+  const td=stats(tasksOn(today())), wk=stats(tasksOfWeek(mondayOf(today())));
+  const linked=stats(S.tasks.filter(t=>t.link)), sk=streaks();
+  const wl=tasksOfWeek(mondayOf(today())), ts=timeStats(wl), tsAll=timeStats(S.tasks);
+  // calendar
+  const m0=pdate(ui.calMonth), y=m0.getFullYear(), mo=m0.getMonth(), dim=new Date(y,mo+1,0).getDate(), lead=(m0.getDay()+6)%7;
+  let cells=DOW.map(d=>`<div class="dow">${d}</div>`).join('')+'<div class="cell blank"></div>'.repeat(lead);
+  for(let i=1;i<=dim;i++){const d=`${y}-${pad(mo+1)}-${pad(i)}`, s=stats(tasksOn(d));
+    const lv=s.pct==null?'':s.pct===100?'l4':s.pct>=60?'l3':s.pct>=30?'l2':'l1';
+    cells+=`<button class="cell ${lv} ${d===today()?'today':''} ${d===ui.calSel?'sel':''}" data-act="cal-pick" data-d="${d}"><span class="n">${i}</span><span class="pc">${s.total?`${s.done}/${s.total}`:''}</span></button>`}
+  const sel=ui.calSel, si=tasksOn(sel), ss=stats(si), sw=stats(tasksOfWeek(mondayOf(sel)));
+  const goalsHtml=S.goals.length?S.goals.map(g=>{const s=stats(tasksForGoal(g));
+    return `<div class="mrow"><div class="row between small"><b style="font-size:14px">${esc(g.title)}</b><span class="mono muted">${s.total?`${s.done}/${s.total} · ${s.pct}%`:'no tasks yet'}</span></div><div class="bar ${s.pct===100?'good':''}" style="margin-top:6px"><i style="width:${s.pct||0}%"></i></div>
+    ${g.milestones.map(m=>{const ms=stats(S.tasks.filter(t=>t.link==='m:'+m.id));return `<div class="row between small" style="margin:8px 0 0 14px"><span class="muted">↳ ${esc(m.title)}</span><span class="mono dim">${ms.total?`${ms.done}/${ms.total}`:'—'}</span></div>`}).join('')}</div>`}).join(''):'<div class="dim small">Add goals on the Goal &amp; milestones page.</div>';
+  return `
+  <div class="head"><div><h1>Daily Success Tracker</h1>
+    <p>How much of each day's Session Sheet and each week's Task Sheet you finished, how close your ETF was to your ATF, and how each milestone is moving.</p></div></div>
+  <div class="tiles">
+    <div class="tile"><div class="big">${pctTxt(td.pct)}</div><div class="lbl">Session Sheet today</div><div class="sub">${td.total?`${td.done} of ${td.total} sessions`:'nothing planned'}</div></div>
+    <div class="tile"><div class="big">${pctTxt(wk.pct)}</div><div class="lbl">Task Sheet this week</div><div class="sub">${wk.total?`${wk.done} of ${wk.total} tasks`:'no tasks yet'}</div></div>
+    <div class="tile"><div class="big">${linked.total?`${linked.done}/${linked.total}`:'—'}</div><div class="lbl">Milestone tasks finished</div><div class="sub">${linked.total?linked.pct+'% of linked tasks':'link tasks to goals'}</div></div>
+    <div class="tile"><div class="big">${sk.cur?sk.cur+(sk.cur===1?' day':' days'):'—'}</div><div class="lbl">${sk.cur?'Perfect-day streak':'No streak yet'}</div><div class="sub">Best ${sk.best} · days with every session done</div></div>
+  </div>
+  <section class="panel" style="margin-top:18px">
+    <div class="row between"><h2>Time discipline</h2><span class="small muted">ETF vs ATF on finished tasks</span></div>
+    <div class="kv" style="margin-top:14px">
+      <div><b>${hrs(sumAtf(wl,'deep'))}</b><span>Deep work this week</span></div>
+      <div><b>${hrs(sumAtf(wl,'shallow'))}</b><span>Shallow work this week</span></div>
+      <div><b>${ts.n?fmtDur(ts.etf)+' / '+fmtDur(ts.atf):'—'}</b><span>ETF / ATF this week</span></div>
+      <div><b style="color:${tsAll.drift==null?'inherit':tsAll.drift<=0?'var(--good)':tsAll.drift<=20?'var(--warn)':'var(--bad)'}">${tsAll.drift==null?'—':(tsAll.drift>0?'+':'')+tsAll.drift+'%'}</b><span>Overall time drift (ATF vs ETF)</span></div>
+      <div><b>${pctTxt(tsAll.onTimePct)}</b><span>Finished within ETF</span></div>
+    </div>
+  </section>
+  <section class="panel chart" style="margin-top:18px">
+    <div class="row between"><h2>Last 7 days</h2><span class="small muted">Share of each day's sessions finished. Days with nothing planned have no point.</span></div>
+    <div style="margin-top:10px">${chart7()}</div>
+  </section>
+  <div class="split" style="margin-top:18px">
+    <section class="panel">
+      <div class="row between"><div class="row"><button class="btn icon" data-act="cal-step" data-n="-1" aria-label="Previous month">‹</button><h2>${m0.toLocaleDateString('en-US',{month:'long',year:'numeric'})}</h2></div>
+      <div class="row"><button class="btn" data-act="cal-today">Today</button><button class="btn icon" data-act="cal-step" data-n="1" aria-label="Next month">›</button></div></div>
+      <div class="cal" style="margin-top:14px">${cells}</div>
+    </section>
+    <section class="panel">
+      <h2>${esc(longDate(sel))}</h2>
+      <div class="row between small" style="margin-top:12px"><span class="muted">Session Sheet</span><span class="mono muted">${ss.total?`${ss.done}/${ss.total} · ${ss.pct}%`:'nothing planned'}</span></div>
+      <div class="bar ${ss.pct===100?'good':''}" style="margin-top:6px"><i style="width:${ss.pct||0}%"></i></div>
+      ${si.length?`<ul class="dlist">${si.map(t=>`<li><span class="dot ${t.done?'on':''}"></span><span style="flex:1;min-width:0;overflow-wrap:anywhere">${t.priority?'★ ':''}${esc(t.title)}</span><span class="chip ${t.type}">${t.type==='deep'?'Deep':'Shallow'}</span>${t.etf!=null?`<span class="mono dim small">${fmtDur(t.etf)} → ${fmtDur(t.atf)}</span>`:''}</li>`).join('')}</ul>`:''}
+      <div class="row between small" style="margin-top:16px"><span class="muted">Task Sheet for that week</span><span class="mono muted">${sw.total?`${sw.done}/${sw.total} · ${sw.pct}%`:'no tasks'}</span></div>
+      <div class="bar ${sw.pct===100?'good':''}" style="margin-top:6px"><i style="width:${sw.pct||0}%"></i></div>
+      <button class="btn" style="margin-top:16px" data-act="open-day" data-d="${sel}">Open in Session Sheet</button>
+    </section>
+  </div>
+  <section class="panel" style="margin-top:18px"><h2>Milestone progress</h2><div style="margin-top:14px">${goalsHtml}</div></section>`;
+}
+
+function vGoals(){
+  return `
+  <div class="head"><div><h1>Goal &amp; milestones</h1>
+    <p>Define each goal, then the milestones that prove you reached it. A milestone's progress is the share of its linked tasks you have finished.</p></div></div>
+  <div class="stack">
+  ${S.goals.map(g=>{const s=stats(tasksForGoal(g));return `
+    <section class="panel gcard">
+      <div class="row">
+        <input class="gtitle" value="${esc(g.title)}" data-gf="${g.id}" aria-label="Goal title">
+        <span class="small mono muted">${s.total?`${s.done}/${s.total} tasks · ${s.pct}%`:'no tasks yet'}</span>
+        <button class="btn ghost icon danger" data-act="del-goal" data-id="${g.id}" aria-label="Delete goal">${ui.armed===g.id?'?':'✕'}</button>
+      </div>
+      <div class="bar ${s.pct===100?'good':''}" style="margin:12px 0 8px"><i style="width:${s.pct||0}%"></i></div>
+      ${g.milestones.map(m=>{const ms=stats(S.tasks.filter(t=>t.link==='m:'+m.id));return `<div class="ms">
+        <input value="${esc(m.title)}" data-mf="${m.id}" aria-label="Milestone title">
+        <div><div class="small mono muted" style="text-align:right;margin-bottom:4px">${ms.total?`${ms.done}/${ms.total}`:'no tasks'}</div><div class="bar ${ms.pct===100?'good':''}"><i style="width:${ms.pct||0}%"></i></div></div>
+        <button class="btn ghost icon danger" data-act="del-ms" data-id="${m.id}" aria-label="Delete milestone">${ui.armed===m.id?'?':'✕'}</button></div>`}).join('')}
+      <form class="row" data-form="add-ms" data-gid="${g.id}" style="margin-top:12px">
+        <input class="inp grow" id="ms-${g.id}" name="title" placeholder="Add a milestone" autocomplete="off" required>
+        <button class="btn primary">Add milestone</button>
+      </form>
+    </section>`}).join('')}
+  </div>
+  <form class="row" data-form="add-goal" style="margin-top:18px">
+    <input class="inp grow" id="newGoal" name="title" placeholder="New goal" autocomplete="off" required>
+    <button class="btn">+ Add goal</button>
+  </form>`;
+}
+
+/* ---------------- Events ---------------- */
+function arm(id){ if(ui.armed===id){ui.armed=null;return true} ui.armed=id; clearTimeout(arm._t); arm._t=setTimeout(()=>{ui.armed=null;render()},3000); render(); return false; }
+function commit(){save();render()}
+
+document.addEventListener('click',e=>{
+  const nav=e.target.closest('[data-nav]');
+  if(nav){ui.view=nav.dataset.nav;try{localStorage.setItem(KEY+'.view',ui.view)}catch(_){}history.replaceState(null,'','#'+ui.view);render();scrollTo(0,0);return}
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const a=b.dataset.act, id=b.dataset.id, t=id&&byId(id), n=+b.dataset.n;
+  switch(a){
+    case 'toggle-done': t.done=!t.done; t.doneAt=t.done?today():null; if(t.done&&t.atf==null&&t.etf!=null){} commit(); if(t.done)toast(t.atf==null?'Done. Add your ATF.':'Done'); break;
+    case 'toggle-star': t.priority=!t.priority; commit(); break;
+    case 'del-task': if(arm(id)){S.tasks=S.tasks.filter(x=>x.id!==id);commit();toast('Task deleted')} break;
+    case 'unschedule': t.day=-1; commit(); toast('Moved back to the week'); break;
+    case 'schedule': t.week=mondayOf(ui.sess); t.day=dayIdx(ui.sess); ui.open.add(t.id); commit(); break;
+    case 'sess-step': ui.sess=addDays(ui.sess,n); render(); break;
+    case 'sess-go': ui.sess=addDays(today(),n); render(); break;
+    case 'week-step': ui.week=addDays(ui.week,7*n); render(); break;
+    case 'week-go': ui.week=addDays(mondayOf(today()),7*n); render(); break;
+    case 'cal-step': {const d=pdate(ui.calMonth);d.setMonth(d.getMonth()+n);ui.calMonth=ymd(d);render();break}
+    case 'cal-today': ui.calMonth=today().slice(0,7)+'-01'; ui.calSel=today(); render(); break;
+    case 'cal-pick': ui.calSel=b.dataset.d; render(); break;
+    case 'open-day': ui.sess=b.dataset.d; ui.view='session'; render(); scrollTo(0,0); break;
+    case 'del-goal': if(arm(id)){const g=S.goals.find(x=>x.id===id);const links=new Set(['g:'+id,...g.milestones.map(m=>'m:'+m.id)]);S.tasks.forEach(t=>{if(links.has(t.link))t.link=''});S.goals=S.goals.filter(x=>x.id!==id);commit()} break;
+    case 'del-ms': if(arm(id)){S.goals.forEach(g=>g.milestones=g.milestones.filter(m=>m.id!==id));S.tasks.forEach(t=>{if(t.link==='m:'+id)t.link=''});commit()} break;
+    case 'open-export': $('#exportModal').hidden=false; break;
+    case 'close-export': $('#exportModal').hidden=true; break;
+    case 'gen-report': genReport(); break;
+    case 'export-backup': download(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}),`laser-focus-backup-${today()}.json`); toast('Backup saved'); break;
+    case 'import-backup': $('#importFile').click(); break;
+  }
+});
+
+document.addEventListener('submit',e=>{
+  const f=e.target.closest('[data-form]'); if(!f) return; e.preventDefault();
+  const fd=new FormData(f), title=String(fd.get('title')||'').trim(); if(!title) return;
+  switch(f.dataset.form){
+    case 'add-session': {const t=newTask({title,type:fd.get('type'),link:fd.get('link'),week:mondayOf(ui.sess),day:dayIdx(ui.sess)});t.plan.q1='';S.tasks.push(t);ui.open.add(t.id);commit();toast('Session added. Now answer the 8 questions.');break}
+    case 'add-task': {S.tasks.push(newTask({title,type:fd.get('type'),link:fd.get('link'),week:ui.week,day:+fd.get('day'),etf:parseDur(fd.get('etf')),priority:!!fd.get('priority')}));commit();setTimeout(()=>$('#tTitle')&&$('#tTitle').focus(),0);break}
+    case 'add-ms': {const g=S.goals.find(x=>x.id===f.dataset.gid);g.milestones.push({id:uid(),title});commit();setTimeout(()=>{const i=document.getElementById('ms-'+g.id);i&&i.focus()},0);break}
+    case 'add-goal': S.goals.push({id:uid(),title,milestones:[]}); commit(); break;
+  }
+});
+
+document.addEventListener('change',e=>{
+  const el=e.target;
+  if(el.dataset.tf){const t=byId(el.dataset.id);if(!t)return;const f=el.dataset.tf;
+    if(f==='etf'||f==='atf'){const v=parseDur(el.value);if(el.value.trim()&&v==null){toast('Use a time like 90, 1h30m or 1.5h');return}t[f]=v}
+    else if(f==='day'){t.day=+el.value}
+    else if(f==='title'){const v=el.value.trim();if(!v){el.value=t.title;return}t.title=v}
+    commit(); return;}
+  if(el.dataset.gf){const g=S.goals.find(x=>x.id===el.dataset.gf);const v=el.value.trim();if(v){g.title=v;save()}else el.value=g.title;return}
+  if(el.dataset.mf){S.goals.forEach(g=>g.milestones.forEach(m=>{if(m.id===el.dataset.mf){const v=el.value.trim();if(v){m.title=v;save()}else el.value=m.title}}));return}
+});
+
+document.addEventListener('input',e=>{
+  const el=e.target; if(!el.dataset.plan) return;
+  const t=byId(el.dataset.id); if(!t) return;
+  t.plan[el.dataset.plan]=el.value; save();
+  const n=planCount(t);
+  const c=document.querySelector(`[data-count="${t.id}"]`); if(c) c.textContent=n+'/8';
+  const p=document.querySelector(`[data-pill="${t.id}"]`); if(p) p.outerHTML=planPill(t);
+  const q=document.querySelector(`[data-q="${t.id}:${el.dataset.plan}"]`); if(q) q.classList.toggle('missing',!el.value.trim());
+});
+
+document.addEventListener('toggle',e=>{
+  const d=e.target; if(!(d instanceof HTMLDetailsElement)||!d.dataset.id) return;
+  if(d.open){ui.open.add(d.dataset.id);ui.open.delete('x'+d.dataset.id)}else{ui.open.delete(d.dataset.id);ui.open.add('x'+d.dataset.id)}
+},true);
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape') $('#exportModal').hidden=true});
+
+const nameEl=$('#ownerName');
+nameEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();nameEl.blur()}});
+nameEl.addEventListener('blur',()=>{const v=nameEl.textContent.trim();S.name=v||S.name;nameEl.textContent=S.name;save()});
+
+$('#importFile').addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{try{const s=JSON.parse(r.result);if(!s||!Array.isArray(s.tasks)||!Array.isArray(s.goals))throw 0;S=s;commit();toast('Backup restored')}catch(_){toast('That file is not a Laser Focus backup')}e.target.value=''};
+  r.readAsText(file);
+});
+
+/* ---------------- Report ---------------- */
+function rangeBounds(r){
+  const t=today();
+  if(r==='week'){const f=mondayOf(t);return{from:f,to:addDays(f,6),label:`Week of ${shortDate(f)} – ${shortDate(addDays(f,6))}`}}
+  if(r==='month'){const f=t.slice(0,7)+'-01',d=pdate(f);const to=ymd(new Date(d.getFullYear(),d.getMonth()+1,0));return{from:f,to,label:d.toLocaleDateString('en-US',{month:'long',year:'numeric'})}}
+  if(r==='30'){return{from:addDays(t,-29),to:t,label:`Last 30 days · ${shortDate(addDays(t,-29))} – ${shortDate(t)}`}}
+  const ds=S.tasks.map(effDate).sort(); const from=ds[0]&&ds[0]<t?ds[0]:addDays(t,-6); const to=ds.length&&ds[ds.length-1]>t?ds[ds.length-1]:t;
+  return{from,to,label:`All time · ${shortDate(from)} – ${fmt(to,{month:'short',day:'numeric',year:'numeric'})}`};
+}
+
+function buildReport(range,style){
+  const {from,to,label}=rangeBounds(range);
+  const list=S.tasks.filter(t=>{const d=effDate(t);return d>=from&&d<=to});
+  const st=stats(list), sk=streaks(), ts=timeStats(list);
+  const deepL=list.filter(t=>t.type==='deep'), shL=list.filter(t=>t.type==='shallow');
+  const dS=stats(deepL), sS=stats(shL), deepM=sumAtf(list,'deep'), shM=sumAtf(list,'shallow');
+  const sess=list.filter(t=>t.day>=0), planned=sess.length, fullPlans=sess.filter(t=>planCount(t)===8).length;
+  const pri=stats(list.filter(t=>t.priority));
+  // series
+  const nDays=Math.round((pdate(to)-pdate(from))/864e5)+1, weekly=nDays>31;
+  const buckets=[];
+  if(!weekly){for(let d=from;d<=to;d=addDays(d,1)) buckets.push({k:d,lab:nDays<=10?fmt(d,{weekday:'short'})+' '+pdate(d).getDate():String(pdate(d).getDate()),L:list.filter(t=>effDate(t)===d)})}
+  else{for(let w=mondayOf(from);w<=to;w=addDays(w,7)) buckets.push({k:w,lab:shortDate(w),L:list.filter(t=>{const d=effDate(t);return d>=w&&d<=addDays(w,6)})})}
+  const showEvery=Math.ceil(buckets.length/16);
+  const bars=buckets.map(b=>{const s=stats(b.L);return `<div class="b">${s.pct==null?'<i class="none"></i>':`<i class="${s.pct===100?'full':''}" style="height:${Math.max(3,s.pct)}%"></i>`}</div>`}).join('');
+  const xl=buckets.map((b,i)=>`<span>${i%showEvery===0?esc(b.lab):''}</span>`).join('');
+  const goals=S.goals.map(g=>{const L=tasksForGoal(g).filter(t=>list.includes(t)),s=stats(L);
+    return `<div class="rp-line"><span>${esc(trunc(g.title,64))}</span><span>${s.total?`${s.done}/${s.total} · ${s.pct}%`:'no tasks in period'}</span></div><div class="rp-track"><i style="width:${s.pct||0}%"></i></div>`}).join('')||'<div class="rp-line"><span>No goals yet</span></div>';
+  const done=list.filter(t=>t.done).sort((a,b)=>(effDate(b)).localeCompare(effDate(a))||b.created-a.created).slice(0,14);
+  const rows=done.map(t=>{const dl=t.etf!=null&&t.atf!=null?t.atf-t.etf:null;
+    return `<tr><td class="n" style="text-align:left">${esc(shortDate(effDate(t)))}</td><td>${t.priority?'★ ':''}${esc(trunc(t.title,60))}</td><td>${t.type==='deep'?'Deep':'Shallow'}</td><td class="n">${fmtDur(t.etf)}</td><td class="n">${fmtDur(t.atf)}</td><td class="n" style="color:${dl==null?'inherit':dl<=0?'#3fb37f':'#e0533f'}">${dl==null?'—':(dl>0?'+':dl<0?'−':'')+fmtDur(Math.abs(dl))}</td></tr>`}).join('');
+  const tot=deepM+shM||1;
+  return `<div class="rp ${style==='light'?'light':''}">
+    <div class="rp-top"><div><div class="rp-eyebrow">Laser Focus · Progress Report</div><div class="rp-name">${esc(S.name||'')}</div></div>
+      <div class="rp-meta"><b>${esc(label)}</b><br>Generated ${esc(fmt(today(),{day:'numeric',month:'long',year:'numeric'}))}</div></div>
+    <div class="rp-kpis">
+      <div class="rp-k"><div class="v">${pctTxt(st.pct)}</div><div class="l">Tasks completed</div><div class="s">${st.done} of ${st.total}</div></div>
+      <div class="rp-k"><div class="v">${hrs(deepM)}</div><div class="l">Deep work (ATF)</div><div class="s">${dS.done} of ${dS.total} deep tasks</div></div>
+      <div class="rp-k"><div class="v">${ts.drift==null?'—':(ts.drift>0?'+':'')+ts.drift+'%'}</div><div class="l">Time drift, ATF vs ETF</div><div class="s">${ts.n?`${pctTxt(ts.onTimePct)} finished within ETF`:'log ETF and ATF to see this'}</div></div>
+      <div class="rp-k"><div class="v">${sk.best}</div><div class="l">Best perfect-day streak</div><div class="s">Current ${sk.cur} · ${sk.perfectDays}/${sk.planned} days perfect</div></div>
+    </div>
+    <div class="rp-sec"><h3>${weekly?'Weekly':'Daily'} completion <small>share of planned tasks finished${weekly?' per week':' per day'}</small></h3>
+      <div class="rp-box"><div class="rp-bars">${bars}</div><div class="rp-xl">${xl}</div>
+      <div class="rp-legend" style="margin-top:10px"><span><i style="background:var(--racc)"></i>Partly done</span><span><i style="background:#3fb37f"></i>Fully done</span><span><i style="background:var(--rline)"></i>Nothing planned</span></div></div></div>
+    <div class="rp-sec rp-two">
+      <div><h3>Deep vs shallow work</h3><div class="rp-box">
+        <div class="rp-stack"><i style="width:${deepM/tot*100}%;background:var(--racc)"></i><i style="width:${shM/tot*100}%;background:#79b8cc"></i></div>
+        <div class="rp-line"><span>Deep work</span><span>${hrs(deepM)} · ${dS.done}/${dS.total} tasks</span></div>
+        <div class="rp-line"><span>Shallow work</span><span>${hrs(shM)} · ${sS.done}/${sS.total} tasks</span></div>
+        <div class="rp-line"><span>Priority (★) tasks</span><span>${pri.total?`${pri.done}/${pri.total} · ${pri.pct}%`:'—'}</span></div>
+        <div class="rp-line" style="margin:0"><span>Session plans fully answered</span><span>${planned?`${fullPlans}/${planned}`:'—'}</span></div>
+      </div></div>
+      <div><h3>Time discipline</h3><div class="rp-box">
+        <div class="rp-line"><span>Total estimated (ETF)</span><span>${fmtDur(ts.etf)}</span></div>
+        <div class="rp-line"><span>Total actual (ATF)</span><span>${fmtDur(ts.atf)}</span></div>
+        <div class="rp-line"><span>Tasks with both logged</span><span>${ts.n}</span></div>
+        <div class="rp-line"><span>Finished within ETF</span><span>${ts.n?`${ts.onTime}/${ts.n}`:'—'}</span></div>
+        <div class="rp-line" style="margin:0"><span>Average per task (ATF)</span><span>${ts.n?fmtDur(ts.atf/ts.n):'—'}</span></div>
+      </div></div>
+    </div>
+    <div class="rp-sec"><h3>Goals &amp; milestones</h3><div class="rp-box" style="padding-bottom:4px">${goals}</div></div>
+    <div class="rp-sec"><h3>Recently completed <small>${done.length?`latest ${done.length}`:''}</small></h3><div class="rp-box">
+      ${rows?`<table class="rp-tbl"><thead><tr><th>Date</th><th>Task</th><th>Type</th><th class="n">ETF</th><th class="n">ATF</th><th class="n">Δ</th></tr></thead><tbody>${rows}</tbody></table>`:'<div class="rp-line"><span>No completed tasks in this period yet.</span></div>'}
+    </div></div>
+    <div class="rp-foot"><span>Laser Focus Ritual · Task Sheet · Session Sheet · Success Tracker</span><span>${esc(S.name||'')}</span></div>
+  </div>`;
+}
+
+async function genReport(){
+  const range=document.querySelector('input[name=exRange]:checked').value;
+  const fmtSel=document.querySelector('input[name=exFmt]:checked').value;
+  const style=document.querySelector('input[name=exStyle]:checked').value;
+  if(typeof html2canvas!=='function'){toast('Export needs an internet connection to load. Reload and try again.');return}
+  const btn=$('#genBtn'); btn.disabled=true; btn.textContent='Building…';
+  const stage=$('#stage'); stage.innerHTML=buildReport(range,style);
+  try{
+    if(document.fonts&&document.fonts.ready) await document.fonts.ready;
+    const node=stage.firstElementChild, bg=style==='light'?'#ffffff':'#0c0907';
+    const canvas=await html2canvas(node,{scale:2,backgroundColor:bg,logging:false});
+    const base=`laser-focus-report-${range}-${today()}`;
+    if(fmtSel==='png'){
+      await new Promise(res=>canvas.toBlob(b=>{download(b,base+'.png');res()},'image/png'));
+    }else{
+      const {jsPDF}=window.jspdf; const pdf=new jsPDF({unit:'pt',format:'a4',compress:true});
+      const pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
+      const ratio=canvas.width/pw, sliceH=Math.floor(ph*ratio);
+      const rgb=style==='light'?[255,255,255]:[12,9,7];
+      for(let y=0,i=0;y<canvas.height;y+=sliceH,i++){
+        const h=Math.min(sliceH,canvas.height-y), c=document.createElement('canvas'); c.width=canvas.width; c.height=h;
+        const ctx=c.getContext('2d'); ctx.fillStyle=bg; ctx.fillRect(0,0,c.width,h); ctx.drawImage(canvas,0,y,canvas.width,h,0,0,canvas.width,h);
+        if(i) pdf.addPage(); pdf.setFillColor(...rgb); pdf.rect(0,0,pw,ph,'F');
+        pdf.addImage(c.toDataURL('image/jpeg',0.93),'JPEG',0,0,pw,h/ratio);
+      }
+      pdf.save(base+'.pdf');
+    }
+    $('#exportModal').hidden=true; toast('Report downloaded');
+  }catch(err){console.error(err);toast('Could not build the report. Try again.')}
+  finally{btn.disabled=false;btn.textContent='Download report';stage.innerHTML=''}
+}
+
+window.addEventListener('hashchange',()=>{const v=location.hash.slice(1);if(['session','tracker','tasks','goals'].includes(v)){ui.view=v;render()}});
+render();
+})();
+</script>
+</body>
+</html>
