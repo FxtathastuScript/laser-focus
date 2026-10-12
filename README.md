@@ -15,6 +15,7 @@ It is a single static page (`index.html`) with no server and no sign-up. Everyth
 | Every Sunday | **Task Sheet** | Pick the week's tasks, split them into Deep and Shallow work, star priorities, set an ETF |
 | Every night | **Session Sheet** | Plan tomorrow and answer the 8 questions for each session |
 | Any time | **Daily Success Tracker** | See completion, streaks, time accuracy and milestone progress |
+| Every Sunday | **Weekly Review** | Review the week, carry over unfinished tasks, reflect and rate it |
 | Any time | **Goal & milestones** | Define goals, add milestones, link tasks to them |
 
 ## Features
@@ -39,12 +40,27 @@ Every session has eight required questions:
 
 Unanswered questions are outlined in red, and each session shows how many questions are left. Items you add here also appear on that day in the Task Sheet. Ticking one off in either place updates both. You can also pull unscheduled tasks from the week's Task Sheet in one click.
 
+### Focus timer
+- Every unfinished task and session has a **▶ Start focus** button.
+- A timer bar stays at the bottom of every page. It shows the task, the elapsed time, and how much of the ETF is left. The bar turns red once you go over the ETF.
+- **Pause** and **Resume** at any time. **Stop & log** adds the focused time to the task's ATF. A task can be timed in several sittings, and each sitting adds to the total.
+- Ticking a task done while its timer runs logs the time first. Runs under 30 seconds are not logged.
+- The timer keeps running if you close or reload the page. The browser tab title shows the running time.
+
 ### Daily Success Tracker
 - Today's session completion and this week's task completion.
 - Milestone tasks finished, and a **perfect-day streak** (days where every planned session was done).
 - **Time discipline:** deep and shallow hours this week, total ETF vs ATF, overall time drift, and the share of tasks finished within their ETF.
 - A 7-day completion chart and a colour-coded month calendar. Click any day to see its sessions.
 - Progress bars for every goal and milestone.
+
+### Weekly Review
+- Pick any week. It defaults to the current week.
+- Shows completion, deep and shallow hours, time drift, perfect days, priority tasks done, and session plans fully answered.
+- A day-by-day strip shows each day's completion.
+- **Unfinished tasks:** carry one, or all, into next week's Task Sheet. The task is copied with its type, priority, goal and ETF, and this week's numbers stay as they were.
+- Goal progress for that week.
+- **Reflection:** five questions (what went well, what didn't and why, where the ETF missed most, what to change, top 3 priorities for next week) and a 1–10 rating. Answers save as you type. The ETF question shows the week's biggest overrun as a hint.
 
 ### Goals & milestones
 - Add, rename and delete goals and milestones.
@@ -55,6 +71,11 @@ Click **Export report** to download a one-page summary as a **PNG** or an **A4 P
 - Periods: this week, this month, last 30 days, or all time.
 - Styles: dark, or a light print-friendly version.
 - Includes headline stats, a daily or weekly completion chart, deep vs shallow work, ETF vs ATF accuracy, goal progress and a list of recently completed tasks.
+- A **This week** report also includes your Weekly Review answers and rating. Longer periods show your weekly ratings and their average.
+
+### Theme and phone layout
+- The button next to Export switches the theme: **Auto** (follows your device), **Light** or **Dark**. Your choice is remembered.
+- The layout adapts to phones. The menu scrolls sideways, task rows put Day, ETF and ATF on one line, and the timer bar fits the screen.
 
 ### Backup
 **Export backup** saves all your data as a `.json` file. **Import backup** restores it, which is also how you move your data to another browser or device.
